@@ -2,12 +2,16 @@ package com.jjc.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -99,6 +103,20 @@ public class FileSystemStorageService implements StorageService {
 		}
 		catch (IOException e) {
 			throw new StorageException("Could not initialize storage", e);
+		}
+	}
+
+	@Override
+	public String filename(String filename, HttpServletRequest request) {
+		try {
+			if (request.getHeader("User-Agent").toUpperCase().indexOf("MSIE") > 0) {
+				return URLEncoder.encode(filename, "UTF-8");
+			} else {
+				return new String(filename.getBytes("UTF-8"), "ISO8859-1");
+			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			return filename;
 		}
 	}
 }
